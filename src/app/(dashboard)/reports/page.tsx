@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useTenant } from '@/hooks/use-tenant'
-import { createClient } from '@/lib/supabase/client'
+import { useReports } from '@/hooks/use-reports'
+import { useLanguage } from '@/lib/i18n'
 import { formatCurrency, formatDate } from '@/lib/format'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -41,48 +42,19 @@ const PAYMENT_LABELS: Record<string, string> = {
 
 export default function ReportsPage() {
   const { currentTenant } = useTenant()
+  const { t } = useLanguage()
   const [dateFrom, setDateFrom] = useState(() => {
     const d = new Date()
     d.setDate(d.getDate() - 7)
     return d.toISOString().split('T')[0]
   })
   const [dateTo, setDateTo] = useState(() => new Date().toISOString().split('T')[0])
-  const [dailySales, setDailySales] = useState<DailySales[]>([])
-  const [paymentBreakdown, setPaymentBreakdown] = useState<PaymentBreakdown[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    if (!currentTenant?.id) return
-
-    const fetchReports = async () => {
-      setIsLoading(true)
-      const supabase = createClient()
-
-      // Fetch daily sales
-      const { data: sales } = await supabase
-        .from('v_daily_sales')
-        .select('*')
-        .eq('tenant_id', currentTenant.id)
-        .gte('date', dateFrom)
-        .lte('date', dateTo)
-        .order('date')
-
-      setDailySales((sales as DailySales[]) || [])
-
-      // Fetch payment breakdown
-      const { data: payments } = await supabase
-        .from('v_payment_breakdown')
-        .select('*')
-        .eq('tenant_id', currentTenant.id)
-        .gte('date', dateFrom)
-        .lte('date', dateTo)
-
-      setPaymentBreakdown((payments as PaymentBreakdown[]) || [])
-      setIsLoading(false)
-    }
-
-    fetchReports()
-  }, [currentTenant?.id, dateFrom, dateTo])
+  
+  const { dailySales, paymentBreakdown, isLoading } = useReports(
+    currentTenant?.id || null,
+    dateFrom,
+    dateTo
+  )
 
   // Calculate totals
   const totalRevenue = dailySales.reduce((sum, d) => sum + Number(d.completed_revenue || 0), 0)
@@ -136,7 +108,7 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold">Rapports</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">{t('reports')}</h1>
           <p className="text-muted-foreground text-sm">
             Analyse des ventes et performances
           </p>
@@ -325,13 +297,13 @@ export default function ReportsPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left p-3 text-sm font-medium text-muted-foreground">Date</th>
-                  <th className="text-right p-3 text-sm font-medium text-muted-foreground">Commandes</th>
-                  <th className="text-right p-3 text-sm font-medium text-muted-foreground">Terminées</th>
-                  <th className="text-right p-3 text-sm font-medium text-muted-foreground">Annulées</th>
-                  <th className="text-right p-3 text-sm font-medium text-muted-foreground">Revenus</th>
-                  <th className="text-right p-3 text-sm font-medium text-muted-foreground">Panier Moyen</th>
+                <tr className="border-b border-border bg-muted/30">
+                  <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Date</th>
+                  <th className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3 hidden sm:table-cell">Commandes</th>
+                  <th className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3 hidden md:table-cell">Terminées</th>
+                  <th className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3 hidden md:table-cell">Annulées</th>
+                  <th className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Revenus</th>
+                  <th className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3 hidden lg:table-cell">Panier Moyen</th>
                 </tr>
               </thead>
               <tbody>
@@ -354,13 +326,13 @@ export default function ReportsPage() {
                   </tr>
                 ) : (
                   dailySales.map((day) => (
-                    <tr key={day.date} className="border-b border-border hover:bg-muted/50">
-                      <td className="p-3 font-medium">{formatDate(day.date, 'dd/MM/yyyy')}</td>
-                      <td className="p-3 text-right">{day.order_count}</td>
-                      <td className="p-3 text-right text-emerald-500">{day.completed_count}</td>
-                      <td className="p-3 text-right text-red-500">{day.cancelled_count}</td>
-                      <td className="p-3 text-right font-medium">{formatCurrency(Number(day.completed_revenue || 0))}</td>
-                      <td className="p-3 text-right text-muted-foreground">{formatCurrency(Number(day.avg_order_value || 0))}</td>
+                    <tr key={day.date} className="border-b border-border hover:bg-muted/30 transition-colors">
+                      <td className="px-4 py-3 font-medium">{formatDate(day.date, 'dd/MM/yyyy')}</td>
+                      <td className="px-4 py-3 text-right hidden sm:table-cell">{day.order_count}</td>
+                      <td className="px-4 py-3 text-right text-emerald-600 dark:text-emerald-400 hidden md:table-cell">{day.completed_count}</td>
+                      <td className="px-4 py-3 text-right text-red-600 dark:text-red-400 hidden md:table-cell">{day.cancelled_count}</td>
+                      <td className="px-4 py-3 text-right font-medium">{formatCurrency(Number(day.completed_revenue || 0))}</td>
+                      <td className="px-4 py-3 text-right text-muted-foreground hidden lg:table-cell">{formatCurrency(Number(day.avg_order_value || 0))}</td>
                     </tr>
                   ))
                 )}

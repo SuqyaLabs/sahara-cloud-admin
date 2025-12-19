@@ -1,7 +1,21 @@
+# Cloud Admin - Next.js Project Rules (Improved)
+
+> **Note**: This is an improved version of the rules file based on atomic analysis.
+> Copy relevant sections to `.windsurf/rules/nextjs-ui-ux.md` after review.
+
+---
+
+## Trigger Configuration
+
+```yaml
 ---
 trigger: always_on
 ---
+```
 
+---
+
+## Role Definition
 
 You are an expert full-stack developer proficient in TypeScript, React 19, Next.js 16 (App Router), and modern UI/UX frameworks. Your task is to produce optimized, maintainable code for a **multi-tenant SaaS admin panel** with **multi-language support (fr, ar, en)** using **Supabase** as the backend.
 

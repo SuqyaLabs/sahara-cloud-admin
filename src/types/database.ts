@@ -91,13 +91,35 @@ export interface Database {
           pb_id: string | null
           tenant_id: string
           name: string
+          type: 'simple' | 'variable' | 'composite'
           price: number
+          cost_price: number | null
           category_id: string | null
-          is_active: boolean
+          barcode: string | null
+          sku: string | null
           is_available: boolean
-          description: string | null
+          track_stock: boolean
           image: string | null
-          preparation_station: 'kitchen' | 'bar' | 'oven' | null
+          images: string[] | null
+          brand: string | null
+          weight: number | null
+          weight_unit: 'kg' | 'g' | 'lb' | 'oz' | null
+          is_weight_based: boolean
+          tax_class: 'standard' | 'reduced' | 'zero' | 'exempt' | null
+          season: 'spring' | 'summer' | 'fall' | 'winter' | 'all_season' | null
+          gender: 'unisex' | 'male' | 'female' | 'kids' | null
+          material: string | null
+          visibility: 'pos_only' | 'online_only' | 'both' | 'hidden' | null
+          slug: string | null
+          is_online: boolean
+          short_description: string | null
+          long_description: string | null
+          seo_title: string | null
+          seo_description: string | null
+          low_stock_threshold: number | null
+          printer_dest: 'kitchen' | 'bar' | 'oven' | null
+          pb_updated_at: string | null
+          sync_version: number | null
           created_at: string
           updated_at: string
         }
@@ -233,7 +255,77 @@ export type Payment = Database['public']['Tables']['payments']['Row']
 export type Shift = Database['public']['Tables']['shifts']['Row']
 export type Customer = Database['public']['Tables']['customers']['Row']
 
+export interface Variant {
+  id: string
+  pb_id: string | null
+  tenant_id: string
+  product_id: string | null
+  product_pb_id: string | null
+  name: string
+  price_mod: number
+  barcode: string | null
+  sku: string | null
+  track_stock: boolean
+  created_at: string
+  updated_at: string
+  pb_updated_at: string | null
+  sync_version: number | null
+}
+
+export interface ProductWithVariants extends Product {
+  variants?: Variant[]
+  category?: Category
+}
+
 export type DailySales = Database['public']['Views']['v_daily_sales']['Row']
 export type HourlySales = Database['public']['Views']['v_hourly_sales']['Row']
 export type ProductPerformance = Database['public']['Views']['v_product_performance']['Row']
 export type PaymentBreakdown = Database['public']['Views']['v_payment_breakdown']['Row']
+
+// Multi-language support types
+export interface Language {
+  code: string
+  name: string
+  native_name: string
+  is_default: boolean
+  is_rtl: boolean
+  is_active: boolean
+  created_at: string
+}
+
+export interface ProductTranslation {
+  id: string
+  product_id: string
+  language_code: string
+  name: string
+  short_description: string | null
+  long_description: string | null
+  seo_title: string | null
+  seo_description: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CategoryTranslation {
+  id: string
+  category_id: string
+  language_code: string
+  name: string
+  description: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface VariantTranslation {
+  id: string
+  variant_id: string
+  language_code: string
+  name: string
+  created_at: string
+  updated_at: string
+}
+
+// Translation input types (for create/update)
+export type ProductTranslationInput = Omit<ProductTranslation, 'id' | 'created_at' | 'updated_at'>
+export type CategoryTranslationInput = Omit<CategoryTranslation, 'id' | 'created_at' | 'updated_at'>
+export type VariantTranslationInput = Omit<VariantTranslation, 'id' | 'created_at' | 'updated_at'>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useTenant } from '@/hooks/use-tenant'
 import { createClient } from '@/lib/supabase/client'
+import { useLanguage } from '@/lib/i18n'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,14 +17,22 @@ import {
   MapPin, 
   Shield,
   Save,
-  Check
+  Check,
+  Languages,
+  Loader2,
+  Star
 } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import { useLanguages } from '@/hooks/use-languages'
 
 export default function SettingsPage() {
   const { currentTenant, refreshTenants } = useTenant()
+  const { t } = useLanguage()
+  const { languages, isLoading: languagesLoading, updateLanguage, setDefaultLanguage } = useLanguages()
   const [user, setUser] = useState<{ email: string; id: string } | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
+  const [updatingLang, setUpdatingLang] = useState<string | null>(null)
   const [passwordForm, setPasswordForm] = useState({
     current: '',
     new: '',
@@ -83,7 +92,7 @@ export default function SettingsPage() {
     <div className="space-y-6 animate-fade-in max-w-4xl">
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold">Paramètres</h1>
+        <h1 className="text-xl sm:text-2xl font-bold">{t('settings')}</h1>
         <p className="text-muted-foreground text-sm">
           Gérez les paramètres de votre compte et restaurant
         </p>
@@ -180,6 +189,86 @@ export default function SettingsPage() {
             </div>
           ) : (
             <p className="text-muted-foreground">Aucun restaurant sélectionné</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Languages */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Languages className="w-5 h-5 text-muted-foreground" />
+            <CardTitle className="text-lg">Langues</CardTitle>
+          </div>
+          <CardDescription>
+            Gérez les langues disponibles pour vos produits et catégories
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {languagesLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {languages.map((lang) => (
+                <div
+                  key={lang.code}
+                  className="flex items-center justify-between p-3 rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{lang.native_name}</span>
+                        <span className="text-sm text-muted-foreground">({lang.name})</span>
+                        {lang.is_default && (
+                          <Badge variant="secondary" className="text-xs">
+                            <Star className="w-3 h-3 mr-1 fill-current" />
+                            Par défaut
+                          </Badge>
+                        )}
+                        {lang.is_rtl && (
+                          <Badge variant="outline" className="text-xs">RTL</Badge>
+                        )}
+                      </div>
+                      <span className="text-xs text-muted-foreground uppercase">{lang.code}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    {!lang.is_default && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={updatingLang === lang.code}
+                        onClick={async () => {
+                          setUpdatingLang(lang.code)
+                          await setDefaultLanguage(lang.code)
+                          setUpdatingLang(null)
+                        }}
+                      >
+                        {updatingLang === lang.code ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          'Définir par défaut'
+                        )}
+                      </Button>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Actif</span>
+                      <Switch
+                        checked={lang.is_active}
+                        disabled={lang.is_default || updatingLang === lang.code}
+                        onCheckedChange={async (checked) => {
+                          setUpdatingLang(lang.code)
+                          await updateLanguage(lang.code, { is_active: checked })
+                          setUpdatingLang(null)
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </CardContent>
       </Card>

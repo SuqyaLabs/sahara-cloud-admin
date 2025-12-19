@@ -1,40 +1,75 @@
 @import "tailwindcss";
 
-/* Linear-style dark theme */
+/* Linear-style Light theme - Gray/White with Black primary */
 :root {
-  --background: 0 0% 4%;
+  --background: 0 0% 97.5%;
+  --foreground: 0 0% 9%;
+  
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 9%;
+  
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 9%;
+  
+  --primary: 0 0% 9%;
+  --primary-foreground: 0 0% 100%;
+  
+  --secondary: 0 0% 96%;
+  --secondary-foreground: 0 0% 9%;
+  
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
+  
+  --accent: 0 0% 96%;
+  --accent-foreground: 0 0% 9%;
+  
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  
+  --border: 0 0% 90%;
+  --input: 0 0% 90%;
+  --ring: 0 0% 9%;
+  
+  --radius: 0.5rem;
+  
+  --success: 142 76% 36%;
+  --warning: 38 92% 50%;
+  --info: 217 91% 60%;
+}
+
+/* Linear-style Dark theme */
+.dark {
+  --background: 0 0% 5%;
   --foreground: 0 0% 98%;
   
-  --card: 0 0% 7%;
+  --card: 0 0% 8%;
   --card-foreground: 0 0% 98%;
   
-  --popover: 0 0% 7%;
+  --popover: 0 0% 8%;
   --popover-foreground: 0 0% 98%;
   
-  --primary: 262.1 83.3% 57.8%;
-  --primary-foreground: 0 0% 100%;
+  --primary: 0 0% 100%;
+  --primary-foreground: 0 0% 9%;
   
   --secondary: 0 0% 12%;
   --secondary-foreground: 0 0% 98%;
   
   --muted: 0 0% 12%;
-  --muted-foreground: 0 0% 63.9%;
+  --muted-foreground: 0 0% 55%;
   
   --accent: 0 0% 12%;
   --accent-foreground: 0 0% 98%;
   
-  --destructive: 0 62.8% 30.6%;
+  --destructive: 0 62% 30%;
   --destructive-foreground: 0 0% 98%;
   
-  --border: 0 0% 14.9%;
-  --input: 0 0% 14.9%;
-  --ring: 262.1 83.3% 57.8%;
+  --border: 0 0% 15%;
+  --input: 0 0% 15%;
+  --ring: 0 0% 100%;
   
-  --radius: 0.5rem;
-  
-  --success: 142.1 76.2% 36.3%;
+  --success: 142 76% 36%;
   --warning: 38 92% 50%;
-  --info: 217.2 91.2% 59.8%;
+  --info: 217 91% 60%;
 }
 
 * {
@@ -85,7 +120,7 @@ body {
   }
   
   .bg-gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(280 83% 45%) 100%);
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(0 0% 20%) 100%);
   }
 }
 

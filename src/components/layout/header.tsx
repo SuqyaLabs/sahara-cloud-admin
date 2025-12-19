@@ -7,6 +7,9 @@ import { cn } from '@/lib/utils'
 import { TenantSwitcher } from './tenant-switcher'
 import { useTenant } from '@/hooks/use-tenant'
 import { User, LogOut, Settings, ChevronDown, Menu } from 'lucide-react'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { LanguageSwitcher } from '@/components/language-switcher'
+import { useLanguage } from '@/lib/i18n'
 
 interface HeaderProps {
   onMobileMenuClick?: () => void
@@ -14,6 +17,7 @@ interface HeaderProps {
 
 export function Header({ onMobileMenuClick }: HeaderProps) {
   const router = useRouter()
+  const { t } = useLanguage()
   const { tenants, currentTenant, setCurrentTenant, isLoading } = useTenant()
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [user, setUser] = useState<{ email: string } | null>(null)
@@ -64,7 +68,13 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
         isLoading={isLoading}
       />
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
+        {/* Language Switcher */}
+        <LanguageSwitcher />
+        
+        {/* Theme Toggle */}
+        <ThemeToggle />
+
         {/* User Menu */}
         <div className="relative" ref={menuRef}>
           <button
@@ -87,10 +97,10 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
           </button>
 
           {isUserMenuOpen && (
-            <div className="absolute top-full right-0 mt-1 w-56 rounded-md border border-border bg-zinc-900 shadow-lg z-50 animate-fade-in">
+            <div className="absolute top-full right-0 mt-1 w-56 rounded-md border border-border bg-card shadow-lg z-50 animate-fade-in">
               <div className="p-2 border-b border-border">
                 <p className="text-sm font-medium truncate">{user?.email}</p>
-                <p className="text-xs text-muted-foreground">Propriétaire</p>
+                <p className="text-xs text-muted-foreground">{t('owner')}</p>
               </div>
               <div className="p-1">
                 <button
@@ -101,14 +111,14 @@ export function Header({ onMobileMenuClick }: HeaderProps) {
                   className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md hover:bg-accent transition-colors"
                 >
                   <Settings className="w-4 h-4" />
-                  Paramètres
+                  {t('settings')}
                 </button>
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-2 w-full px-3 py-2 text-sm rounded-md hover:bg-accent text-destructive transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
-                  Se déconnecter
+                  {t('logout')}
                 </button>
               </div>
             </div>

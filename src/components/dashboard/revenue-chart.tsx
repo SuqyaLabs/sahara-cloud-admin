@@ -88,7 +88,6 @@ export function RevenueChart({ data, isLoading }: RevenueChartProps) {
                 backgroundColor: 'hsl(var(--card))',
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
-                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
               }}
               labelStyle={{ color: 'hsl(var(--foreground))' }}
               formatter={(value: number) => [formatCurrency(value), 'Revenus']}

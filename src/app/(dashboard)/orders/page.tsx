@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useOrders } from '@/hooks/use-orders'
+import { useLanguage } from '@/lib/i18n'
 import { formatCurrency, formatRelativeDate, formatDate } from '@/lib/format'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -46,6 +47,7 @@ const typeConfig: Record<string, string> = {
 
 export default function OrdersPage() {
   const { currentTenant } = useTenant()
+  const { t } = useLanguage()
   const {
     orders,
     totalCount,
@@ -113,14 +115,14 @@ export default function OrdersPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold">Commandes</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">{t('orders')}</h1>
           <p className="text-muted-foreground text-sm">
-            {totalCount} commande{totalCount > 1 ? 's' : ''} trouvée{totalCount > 1 ? 's' : ''}
+            {totalCount} {t('orders').toLowerCase()} {t('found')}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={exportToCSV} className="self-start sm:self-auto">
           <Download className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">Exporter</span> CSV
+          <span className="hidden sm:inline">{t('export_csv')}</span>
         </Button>
       </div>
 
@@ -132,7 +134,7 @@ export default function OrdersPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="Rechercher..."
+                  placeholder={t('search') + '...'}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -165,12 +167,12 @@ export default function OrdersPage() {
             </div>
             <Button variant="outline" onClick={handleSearch} className="col-span-1">
               <Filter className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Filtrer</span>
+              <span className="hidden sm:inline">{t('filter')}</span>
             </Button>
             {hasFilters && (
               <Button variant="ghost" onClick={clearFilters} className="col-span-1">
                 <X className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Effacer</span>
+                <span className="hidden sm:inline">{t('clear')}</span>
               </Button>
             )}
           </div>
@@ -182,14 +184,14 @@ export default function OrdersPage() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-border">
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Numéro</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Date</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Type</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Statut</th>
-                <th className="text-right p-4 text-sm font-medium text-muted-foreground">Total</th>
-                <th className="text-left p-4 text-sm font-medium text-muted-foreground">Serveur</th>
-                <th className="text-right p-4 text-sm font-medium text-muted-foreground">Actions</th>
+              <tr className="border-b border-border bg-muted/30">
+                <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Numéro</th>
+                <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3 hidden sm:table-cell">Date</th>
+                <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3 hidden md:table-cell">Type</th>
+                <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Statut</th>
+                <th className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3">Total</th>
+                <th className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3 hidden lg:table-cell">Serveur</th>
+                <th className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wider px-4 py-3 w-[80px]">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -208,7 +210,7 @@ export default function OrdersPage() {
               ) : orders.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="p-8 text-center text-muted-foreground">
-                    Aucune commande trouvée
+                    {t('no_orders')}
                   </td>
                 </tr>
               ) : (
@@ -219,30 +221,31 @@ export default function OrdersPage() {
                   return (
                     <tr 
                       key={order.id} 
-                      className="border-b border-border hover:bg-muted/50 transition-colors"
+                      className="group border-b border-border hover:bg-muted/30 transition-colors"
                     >
-                      <td className="p-4">
+                      <td className="px-4 py-3">
                         <span className="font-mono font-medium">#{order.order_number}</span>
                       </td>
-                      <td className="p-4 text-sm text-muted-foreground">
+                      <td className="px-4 py-3 text-sm text-muted-foreground hidden sm:table-cell">
                         {formatRelativeDate(order.created_at)}
                       </td>
-                      <td className="p-4 text-sm">
+                      <td className="px-4 py-3 text-sm hidden md:table-cell">
                         {typeConfig[order.type] || order.type}
                       </td>
-                      <td className="p-4">
+                      <td className="px-4 py-3">
                         <Badge variant={status.variant}>{status.label}</Badge>
                       </td>
-                      <td className="p-4 text-right font-medium">
+                      <td className="px-4 py-3 text-right font-medium">
                         {formatCurrency(total)}
                       </td>
-                      <td className="p-4 text-sm text-muted-foreground">
+                      <td className="px-4 py-3 text-sm text-muted-foreground hidden lg:table-cell">
                         {order.waiter_name || '-'}
                       </td>
-                      <td className="p-4 text-right">
+                      <td className="px-4 py-3 text-right">
                         <Button 
                           variant="ghost" 
-                          size="icon"
+                          size="sm"
+                          className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={() => setSelectedOrder(order.id)}
                         >
                           <Eye className="w-4 h-4" />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Order, OrderLine } from '@/types/database'
 
@@ -37,6 +37,9 @@ export function useOrders(tenantId: string | null): UseOrdersReturn {
   const [page, setPage] = useState(1)
   const [filters, setFilters] = useState<UseOrdersFilters>({})
   const pageSize = 25
+
+  // Stable ref for realtime callback
+  const fetchOrdersRef = useRef<() => Promise<void>>(() => Promise.resolve())
 
   const fetchOrders = useCallback(async () => {
     if (!tenantId) {
@@ -92,9 +95,45 @@ export function useOrders(tenantId: string | null): UseOrdersReturn {
     setIsLoading(false)
   }, [tenantId, page, filters])
 
+  // Keep ref updated
+  useEffect(() => {
+    fetchOrdersRef.current = fetchOrders
+  }, [fetchOrders])
+
   useEffect(() => {
     fetchOrders()
   }, [fetchOrders])
+
+  // Realtime subscription for orders - only depends on tenantId
+  useEffect(() => {
+    if (!tenantId) return
+
+    const supabase = createClient()
+    
+    const channel = supabase
+      .channel(`orders-realtime-${tenantId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          filter: `tenant_id=eq.${tenantId}`,
+        },
+        (payload) => {
+          console.log('[Realtime] Orders change:', payload.eventType)
+          // Always refresh to ensure consistency with pagination/filters
+          fetchOrdersRef.current()
+        }
+      )
+      .subscribe((status) => {
+        console.log('[Realtime] Orders subscription status:', status)
+      })
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [tenantId])
 
   const getOrderDetails = useCallback(async (orderId: string): Promise<OrderWithLines | null> => {
     const supabase = createClient()

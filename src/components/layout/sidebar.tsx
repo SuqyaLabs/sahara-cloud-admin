@@ -3,10 +3,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { useLanguage } from '@/lib/i18n'
 import { 
   LayoutDashboard, 
   ShoppingCart, 
-  Package, 
+  Package,
+  FolderTree,
   FileText, 
   Settings,
   Store,
@@ -16,12 +18,13 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
-const navigation = [
-  { name: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Commandes', href: '/orders', icon: ShoppingCart },
-  { name: 'Produits', href: '/products', icon: Package },
-  { name: 'Rapports', href: '/reports', icon: FileText },
-  { name: 'Paramètres', href: '/settings', icon: Settings },
+const navigationItems = [
+  { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { key: 'orders', href: '/orders', icon: ShoppingCart },
+  { key: 'products', href: '/products', icon: Package },
+  { key: 'categories', href: '/categories', icon: FolderTree },
+  { key: 'reports', href: '/reports', icon: FileText },
+  { key: 'settings', href: '/settings', icon: Settings },
 ]
 
 interface SidebarProps {
@@ -31,6 +34,7 @@ interface SidebarProps {
 
 export function Sidebar({ isMobileOpen, onMobileClose }: SidebarProps) {
   const pathname = usePathname()
+  const { t } = useLanguage()
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   return (
@@ -76,11 +80,12 @@ export function Sidebar({ isMobileOpen, onMobileClose }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {navigation.map((item) => {
+        {navigationItems.map((item) => {
           const isActive = pathname.startsWith(item.href)
+          const name = t(item.key)
           return (
             <Link
-              key={item.name}
+              key={item.key}
               href={item.href}
               onClick={onMobileClose}
               className={cn(
@@ -89,10 +94,10 @@ export function Sidebar({ isMobileOpen, onMobileClose }: SidebarProps) {
                   ? 'bg-primary/10 text-primary'
                   : 'text-muted-foreground hover:bg-accent hover:text-foreground'
               )}
-              title={isCollapsed && !isMobileOpen ? item.name : undefined}
+              title={isCollapsed && !isMobileOpen ? name : undefined}
             >
               <item.icon className="w-5 h-5 shrink-0" />
-              {(!isCollapsed || isMobileOpen) && <span>{item.name}</span>}
+              {(!isCollapsed || isMobileOpen) && <span>{name}</span>}
             </Link>
           )
         })}
@@ -109,7 +114,7 @@ export function Sidebar({ isMobileOpen, onMobileClose }: SidebarProps) {
           ) : (
             <>
               <ChevronLeft className="w-5 h-5 mr-2" />
-              <span className="text-sm">Réduire</span>
+              <span className="text-sm">{t('collapse')}</span>
             </>
           )}
         </button>
